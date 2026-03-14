@@ -3,6 +3,14 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 
+// This define is needed to test this code on both versions of libogc
+#include <ogc/libversion.h>
+#if _V_MAJOR_ == 2
+#define LIBOGC_2
+#elif _V_MAJOR_ == 3
+#define LIBOGC_3
+#endif
+
 static void *xfb = NULL;
 static bool isSearching = false;
 static GXRModeObj *rmode = NULL;
@@ -59,8 +67,13 @@ int main(int argc, char **argv) {
 	printf("to toggle searching for guest wiimotes, press +\n");
 	printf("to disconnect all wiimotes, press -\n");
 	printf("to exit, press the home\n");
+	 
+#if defined(LIBOGC_2)
+    while(true) 
+#elif defined(LIBOGC_3)
+    while(SYS_MainLoop())
+#endif
 	
-	while(SYS_MainLoop()) 
 	{
 		//reset console location to 8th row
 		printf("\x1b[9;0H");
@@ -99,6 +112,9 @@ int main(int argc, char **argv) {
 				}
 				else if (data->exp.type == EXP_CLASSIC)
 				{
+#                   if defined(LIBOGC_2)
+                        printf("Classic controller. ");
+#                   elif defined(LIBOGC_3)
 					if (data->exp.classic.type == CLASSIC_TYPE_ORIG)
 					{
 						printf("Original Classic controller. ");
@@ -111,6 +127,7 @@ int main(int argc, char **argv) {
 					{
 						printf("WiiU Classic controller. ");
 					}
+#                   endif
 					printf("LJ: %.2f deg. ", data->exp.classic.ljs.ang);
 					printf("RJ: %.2f deg. ", data->exp.classic.rjs.ang);
 					printf("Buttons: %x \n", data->exp.classic.btns_held);
@@ -147,12 +164,14 @@ int main(int argc, char **argv) {
 			// these stay active and valid on the wii untill the wiimote subsystem is shutdown
 			// when searching is started, all wiimotes will disconnect and the system will start searching for new wiimotes
 			// the searching lasts for 60 seconds or so.
+ #          if defined(LIBOGC_3)         
 			if(isSearching)
 				WPAD_StopSearch();
 			else
 				WPAD_Search();
 
 			isSearching = !isSearching;
+#           endif
 		}
 		if ( pressed & WPAD_BUTTON_MINUS )
 		{
