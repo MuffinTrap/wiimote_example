@@ -140,9 +140,9 @@ int main(int argc, char **argv) {
 				{
 					printf("Guitar. \n");
 				}
-				else
+				else if (data->exp.type == EXP_NONE)
 				{
-					printf("N/A. \n");
+					printf("None. \n");
 				}
 			}
 			else
